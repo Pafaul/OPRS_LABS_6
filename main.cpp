@@ -17,64 +17,46 @@
 #include "custom.h"
 
 
-void showResult(TModel* model);
+void calcModel(TModel* model);
 
 int main()
 {
-    TModel* Model1 = new TSattelites();
-    showResult(Model1);
-    delete Model1;
-
-    printf("\n===========================================================================\n");
-
-    /*TModel* Model2 = new TArenstorfModel2();
-    showResult(Model2);
-    delete Model2;*/
-
+    TVector X0(6);
+    X0.resize(6);
+    X0[0] = -2.566123740124270e+7L; //km
+    X0[1] = 1.339350231544666e+8L;
+    X0[2] = 5.805149372446711e+7L;
+    X0[3] = -2.983549561177192e+1L; //km/c
+    X0[4] = -4.846747552523134L;
+    X0[5] = -2.100585886567924L;
+    Date start, finish, checkDay;
+    start.year=2019; start.month=1; start.day=1;
+    finish.year=2020; finish.month=3; finish.day=17;
+    checkDay.year=2019; checkDay.month=3; checkDay.day=16;
+    TModel* model = new EarthSolarRotation(start, finish, checkDay, X0);
+    TIntegrator* Integrator = new TDormandPrinceIntegrator();
+    Integrator->setPrecision(1E-16);
+    Integrator->Run( model );
+    calcModel(model);
+    delete model;
+    delete Integrator;
 	return 0;
 }
 
 
-void showResult(TModel* model){
+void calcModel(TModel* model){
 
     std::ofstream file("test.txt");
 
-    TIntegrator* Integrator = new TDormandPrinceIntegrator();
-        Integrator->setPrecision(1E-2);
-        //printf ("1");
-        Integrator->Run( model );
-        //printf ("2");
         TMatrix Result = model->getResult();
 
-
-        TVector Res = model->getInitialConditions();
-
-
-        printf ("\nVector Res: \n");
-        for (int z=0; z<4; z++)
-        {
-            printf("%f   ", Res[z]);
-        }
-        printf("\n---------------------------------------------------------------------------");
-
-
-        printf("\nCount string Matrix_x = %i",Result.rowCount());
-        printf("\nCount column Matrix_x = %i", Result.colCount());
-
-        printf("\n---------------------------------------------------------------------------");
-
-        printf("\nResult: \n");
         for (int i=0; i<Result.rowCount(); i++)
         {
             for (int j=0; j<Result.colCount(); j++)
-            {
-                //printf("%10.7Lf ; ", Result(i, j));
-                file << Result(i, j) << "|";
-            }
-            //printf("\n");
+                file << Result(i, j) << " ";
+
             file << std::endl;
         }
 
         file.close();
-        delete Integrator;
 }

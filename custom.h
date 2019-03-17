@@ -1,37 +1,33 @@
 #pragma once//---------------------------------------------------------------------------
 
 #include "model.h"
+#include <tuple>
 
 //---------------------------------------------------------------------------
-// Задача Аренсторфа (начальные условия 1)
 
-class TArenstorfModel  : public TModel
+struct Date
 {
-    protected:
-        static const long double m;
-		long double D1, D2;
-    public:
-        TArenstorfModel(  );
-		void getRight( const TVector& X, long double t, TVector& Y );
+    int year, month, day;
+    int hour, minute;
+    double seconds;
+    bool operator <(const Date& x)
+    {
+        return std::tie(year, month, day, hour, minute, seconds) < std::tie(x.year, x.month, x.day, x.hour, x.minute, x.seconds);
+    }
 };
 
-
 //---------------------------------------------------------------------------
-// Задача Аренсторфа (начальные условия 2)
-
-class TArenstorfModel2 : public TArenstorfModel
-{
-    public:
-        TArenstorfModel2(  );
-};
-//---------------------------------------------------------------------------
-class TSattelites : public TModel
+class EarthSolarRotation : public TModel
+//Earth rotation around Solar, rough calculation
 {
 protected:
     long double mu = 132712.43994e+6; //km^3/c^2
     long double ro = 1.0;
+    Date start, finish, checkDay;
 public:
-    TSattelites();
-    //TSattelites(double t0, double tk);
-    void getRight( const TVector& X, long double t, TVector& Y);
+    EarthSolarRotation();
+    EarthSolarRotation( double t0, double tk, TVector& V );
+    EarthSolarRotation( Date d0, Date dk, Date d, TVector& V);
+    double toJulianDate(Date date);
+    void getRight( const TVector& X, long double t, TVector& Y );
 };

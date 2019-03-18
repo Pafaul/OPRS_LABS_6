@@ -43,9 +43,10 @@ class TMatrix
 protected:
     int n, m;
 
-    long double **data;
+    //long double **data;
 
 public:
+    long double **data;
 
     TMatrix();
 

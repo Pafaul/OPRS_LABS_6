@@ -153,7 +153,7 @@ TVector TVector::operator * (const long double rval) const
 
 TMatrix::TMatrix() : n(0), m(0), data(nullptr) {}
 
-TMatrix::TMatrix(int n, int m) : n(n), m(m)
+TMatrix::TMatrix(int n, int m) : n(0), m(0)
 {
     resize(n, m);
 }

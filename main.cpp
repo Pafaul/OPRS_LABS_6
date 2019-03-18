@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include "LA.h"
 
@@ -16,12 +17,14 @@
 //#include "custom.h"
 #include "custom.h"
 
-
 void calcModel(TModel* model);
+void printDate(Date date);
+Date createDate(void);
 
 int main()
 {
-    TVector X0(6);
+
+    /*TVector X0(6);
     X0.resize(6);
     X0[0] = -2.566123740124270e+7L; //km
     X0[1] = 1.339350231544666e+8L;
@@ -33,7 +36,20 @@ int main()
     start.year=2019; start.month=1; start.day=1;
     finish.year=2020; finish.month=3; finish.day=17;
     checkDay.year=2019; checkDay.month=3; checkDay.day=16;
-    TModel* model = new EarthSolarRotation(start, finish, checkDay, X0);
+    TMatrix* A = new TMatrix (3, 3);//= new TMatrix(3, 3);
+    A->operator() (0, 0) = 1; //- sin(phi) * cos(s);
+    A(0, 1) = - sin(0) * sin(0);
+    A(0, 2) =   cos(0);
+    A(1, 0) =   cos(0) * cos(0);
+    A(1, 1) =   cos(0) * sin(0);
+    A(1, 2) = - sin(0);
+    A(2, 0) = - sin(0);
+    A(2, 1) =   cos(0);
+    A(2, 2) =   0;
+    TVector A (1);
+    A[0] = 1;*/
+    Date startDate = createDate();
+    TModel* model = new EarthSolarRotation( startDate );//, dateChoice());
     TIntegrator* Integrator = new TDormandPrinceIntegrator();
     Integrator->setPrecision(1E-16);
     Integrator->Run( model );
@@ -46,7 +62,7 @@ int main()
 
 void calcModel(TModel* model){
 
-    std::ofstream file("test.txt");
+    std::ofstream file("~/test.txt");
 
         TMatrix Result = model->getResult();
 
@@ -59,4 +75,21 @@ void calcModel(TModel* model){
         }
 
         file.close();
+}
+
+void printDate(Date date)
+{
+    std::cout << "Year: " << date.year << ", Month: " << date.month << ", Day: " << date.day << ", Time: 00:00:00" << std::endl;
+}
+
+Date createDate(void)
+{
+    Date date;
+    std::cout << "Create date." << std::endl;
+    std::cout << "Input year: "; std::cin >> date.year;
+    std::cout << "Input month: "; std::cin >> date.month;
+    std::cout << "Input day: "; std::cin >> date.day;
+    std::cout << "Created date: " << std::endl; printDate(date);
+    date.hour = 0; date.minute = 0; date.seconds = 0;
+    return date;
 }

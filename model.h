@@ -32,6 +32,7 @@ class TModel
         virtual void addResult( const TVector& X, long double t );
 		virtual void clearResult();
 		virtual void prepareResult();
+        virtual void finish() {};
 };
 
 //---------------------------------------------------------------------------

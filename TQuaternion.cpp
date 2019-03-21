@@ -11,7 +11,7 @@ TQuaternion::TQuaternion() : q(0), Q(3)
     Q[2] = 0;
 }
 
-TQuaternion::TQuaternion(double l0, double l1, double l2, double l3) : q(0), Q(3)
+TQuaternion::TQuaternion(long double l0, long double l1, long double l2, long double l3) : q(0), Q(3)
 {
     q = l0;
     Q[0] = l1;
@@ -19,7 +19,7 @@ TQuaternion::TQuaternion(double l0, double l1, double l2, double l3) : q(0), Q(3
     Q[2] = l3;
 }
 
-TQuaternion::TQuaternion(double phi, const TVector& V) : q(0), Q(3)
+TQuaternion::TQuaternion(long double phi, const TVector& V) : q(0), Q(3)
 {
     q = cos(90*phi)/PI;
     Q[0] = (sin(90*phi)/PI)*V[0];
@@ -72,7 +72,7 @@ TQuaternion TQuaternion::operator ! () const
     return conj().norm();
 }
 
-/*double& TQuaternion::operator[](const int i)
+/*long double& TQuaternion::operator[](const int i)
 {
     switch(i){
     case 0: { return q; }
@@ -89,7 +89,7 @@ TQuaternion TQuaternion::operator ! () const
 
  TQuaternion& TQuaternion::norm()
  {
-     double norm = 0;
+     long double norm = 0;
      norm += pow(q, 2); for (int i = 0; i < 3; i++) norm += pow(Q[i], 2);
 
      q   = q/norm;
@@ -120,7 +120,7 @@ TQuaternion TQuaternion::operator ! () const
     return M;
  }
 
- TQuaternion TQuaternion::KrilAngles(double phi, double psi, double theta)
+ TQuaternion TQuaternion::KrilAngles(long double phi, long double psi, long double theta)
  {
      phi   = phi*180/PI;
      psi = psi*180/PI;

@@ -54,6 +54,7 @@ int main()
     Integrator->setPrecision(1E-16);
     Integrator->Run( model );
     calcModel(model);
+    model->finish();
     delete model;
     delete Integrator;
 	return 0;

@@ -6,6 +6,8 @@
 
 #include "LA.h"
 
+#define PI 3.14159265359
+
 //---------------------------------------------------------------------------
 const long double EarthSolarRotation::startConditions[5][6] = {
     {-2.566123740124270E7, 1.33935023154466E7, 5.805149372446711E7, -2.983549561177192E1, -4.846747552523134, -2.100585886567924},
@@ -32,7 +34,7 @@ EarthSolarRotation::EarthSolarRotation() : TModel()
     X0[5] = -2.100585886567924L;
 }
 
-EarthSolarRotation::EarthSolarRotation( double t0, double tk, TVector& V ) : EarthSolarRotation()
+EarthSolarRotation::EarthSolarRotation( long double t0, long double tk, TVector& V ) : EarthSolarRotation()
 {
     this->t0 = t0;
     this->t1 = tk;
@@ -41,7 +43,7 @@ EarthSolarRotation::EarthSolarRotation( double t0, double tk, TVector& V ) : Ear
 
 EarthSolarRotation::EarthSolarRotation( Date dk ) //, int date )
 {
-    Date d0;
+    Date d0; long double temp;
     startDates[0].year = 2019;
     startDates[0].month = 1;
     startDates[0].day = 1;
@@ -71,7 +73,9 @@ EarthSolarRotation::EarthSolarRotation( Date dk ) //, int date )
     checkDay = dk;
     dk.hour = 23; dk.minute = 59; dk.seconds = 59;
     Tstar = ((int) (toJulianDate(d0) - J2000) )/36525.;
-    Sg0 = 24110.54841 + 8640184.812866*Tstar + 0.093104*pow(Tstar, 2) - 6.2*10E-6*pow(Tstar, 3);
+    Sg0 = 24110.54841 + 8640184.812866*Tstar + 0.093104*pow(Tstar, 2) - 6.2*10E-6*pow(Tstar, 3); modf(Sg0, &temp);
+    Sg0 = 2*PI/86400*(Sg0 / 86400 - temp / 86400);
+    gnomonHeight = 1.0;
     Rsh = TVector(3);
     Rg = TVector(3);
     r0 = TVector(3);
@@ -79,11 +83,12 @@ EarthSolarRotation::EarthSolarRotation( Date dk ) //, int date )
     Re0 = TVector(3);
     this->t0 = toJulianDate(d0)*86400; std::cout << "T0: " << this->t0 << std::endl; printDate1(d0);
     this->t1 = toJulianDate(dk)*86400; std::cout << "T1: " << this->t1 << std::endl; printDate1(dk);
+    file.open("output.txt", std::ios_base::out);
     //if ()
     //start = d0; finish = dk;
 };
 
-double EarthSolarRotation::toJulianDate(Date date)
+long double EarthSolarRotation::toJulianDate(Date date)
 {
     int a = (14 - date.month)/12,
         M = date.month+12*a - 3,
@@ -93,23 +98,22 @@ double EarthSolarRotation::toJulianDate(Date date)
     return JDN + (date.hour - 12)/24. + (date.minute)/1440. + date.seconds/86400.;
 }
 
-TMatrix& EarthSolarRotation::getMatrixA(long double phi, long double s)
+void EarthSolarRotation::getMatrixA(long double phi, long double s, TMatrix& A)
 {
-    TMatrix A (3, 3);// = new TMatrix(3, 3);
     A.resize(3, 3);
-    std::cout << "Array Size: " << sizeof(A.data[0])/sizeof(long double) << std::endl;
+    //std::cout << "Array Size: " << sizeof(A.data[0])/sizeof(long double) << std::endl;
     //A(0, 0) = 1;
-    /*A->operator() (0, 0) = 1; //- sin(phi) * cos(s);
-    A->operator() (0, 1) = - sin(phi) * sin(s);
-    A->operator() (0, 2) =   cos(phi);
-    A->operator() (1, 0) =   cos(phi) * cos(s);
-    A->operator() (1, 1) =   cos(phi) * sin(s);
-    A->operator() (1, 2) = - sin(s);
-    A->operator() (2, 0) = - sin(s);
-    A->operator() (2, 1) =   cos(s);
-    A->operator() (2, 2) =   0;*/
+    A(0, 0) = - sin(phi) * cos(s);
+    A(0, 1) = - sin(phi) * sin(s);
+    A(0, 2) =   cos(phi);
+    A(1, 0) =   cos(phi) * cos(s);
+    A(1, 1) =   cos(phi) * sin(s);
+    A(1, 2) = - sin(s);
+    A(2, 0) = - sin(s);
+    A(2, 1) =   cos(s);
+    A(2, 2) =   0;
 
-    return A;
+    //return A;
 }
 
 void EarthSolarRotation::getRight( const TVector& X, long double t, TVector& Y )
@@ -122,16 +126,26 @@ void EarthSolarRotation::getRight( const TVector& X, long double t, TVector& Y )
     Y[3] = -mu*X[0]/pow(ro, 3.);
     Y[4] = -mu*X[1]/pow(ro, 3.);
     Y[5] = -mu*X[2]/pow(ro, 3.);
-    if (toJulianDate(checkDay)*86400 >= t)
+    if (toJulianDate(checkDay)*86400 < t)
     {
-        S = Sg0 + omega*(t/86400 - t0/86400) + longtitude;
+        long double temp = 0.0;
+        S = Sg0 + omega*(t/86400 - t0/86400) + longtitude; temp = S; modf(S, &temp);
+        Srad = 2*PI/86400*(S / 86400 - temp / 86400);
         for(int i = 0; i < 3; i++) Re0[i] = X[i]/ro;
-        r0[0] = cos(latitude)*cos(S);
-        r0[1] = cos(latitude)*sin(S);
+        r0[0] = cos(latitude)*cos(Srad);
+        r0[1] = cos(latitude)*sin(Srad);
         r0[2] = sin(latitude);
         Rg = r0*gnomonHeight;
         ReStar = Re0*(-gnomonHeight/(Re0*r0));
         Rsh = Rg + ReStar;
-        Rsh = getMatrixA(latitude, S) * Rsh;
+        getMatrixA(latitude, Srad, A); Rsh = A * Rsh;
+        long double alfa = acos(ReStar*Rg/(ReStar.length()*Rg.length()));
+        if (alfa > PI/2) daytime = false; else daytime = true;
+        file << (t-toJulianDate(checkDay)*86400)/(60*60) << " " << Rsh.length() << " " << daytime << std::endl;
     }
+}
+
+void EarthSolarRotation::finish()
+{
+    file.close();
 }

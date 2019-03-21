@@ -6,16 +6,16 @@
 class TQuaternion
 {
 protected:
-double q;
+long double q;
 TVector Q;
 
 public:
     TQuaternion();
-    TQuaternion(double l0, double l1, double l2, double l3);
-    TQuaternion(double phi, const TVector& V);
+    TQuaternion(long double l0, long double l1, long double l2, long double l3);
+    TQuaternion(long double phi, const TVector& V);
     TQuaternion(const TQuaternion& rval);
 
-    inline double scal() const { return q; }
+    inline long double scal() const { return q; }
     inline TVector vect() const { return Q; };
 
     TQuaternion& operator = (const TQuaternion& rval);
@@ -32,7 +32,7 @@ public:
 
     TMatrix rotateMatrix() const;
 
-    static TQuaternion KrilAngles(double phi, double psi, double theta);
+    static TQuaternion KrilAngles(long double phi, long double psi, long double theta);
 
 };
 
